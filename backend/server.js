@@ -176,9 +176,9 @@ server.post('/order/place', verifyToken, (req, res) => {
     const userId = req.userDetails.id;
     const { name, address, paymentMethod } = req.body;
 
-    // Fetch all cart items for the user
+
     const getCartQuery = `
-        SELECT CART.PRODUCT_ID, CART.QUANTITY, PRODUCT.PRICE 
+        SELECT CART.PRODUCT_ID, CART.QUANTITY, PRODUCT.PRICE, PRODUCT.QUANTITY AS STOCK 
         FROM CART
         JOIN PRODUCT ON CART.PRODUCT_ID = PRODUCT.ID
         WHERE CART.USER_ID = ?`;
@@ -188,79 +188,51 @@ server.post('/order/place', verifyToken, (req, res) => {
             console.error('Error fetching cart items:', err);
             return res.status(500).send('Error fetching cart items');
         }
-        
+
         if (cartItems.length === 0) {
             return res.status(400).send('Cart is empty. Add items before placing an order.');
         }
 
         let totalAmount = 0;
-        let orderPromises = [];
 
-        // Check stock availability and calculate total amount
-        cartItems.forEach((item) => {
+        for (const item of cartItems) {
+            if (item.STOCK < item.QUANTITY) {
+                return res.status(400).send(`Product ID ${item.PRODUCT_ID} is out of stock or insufficient quantity.`);
+            }
             totalAmount += item.QUANTITY * item.PRICE;
+        }
 
-            orderPromises.push(new Promise((resolve, reject) => {
-                // Check if product stock is enough
-                db.get(`SELECT QUANTITY FROM PRODUCT WHERE ID = ?`, [item.PRODUCT_ID], (err, product) => {
-                    if (err || !product || product.QUANTITY < item.QUANTITY) {
-                        reject(`Product ID ${item.PRODUCT_ID} is out of stock or insufficient quantity`);
-                    } else {
-                        resolve();
-                    }
-                });
-            }));
-        });
+        for (const item of cartItems) {
+            const insertOrderQuery = `
+                INSERT INTO ORDERS (USER_ID, PRODUCT_ID, QUANTITY, TOTAL_PRICE, NAME, ADDRESS, PAYMENT_METHOD) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-        // If all stock checks pass, insert orders
-        Promise.all(orderPromises)
-            .then(() => {
-                let insertOrderPromises = cartItems.map((item) => {
-                    return new Promise((resolve, reject) => {
-                        db.run(`INSERT INTO ORDERS (USER_ID, PRODUCT_ID, QUANTITY, TOTAL_PRICE, NAME, ADDRESS, PAYMENT_METHOD) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?)`, 
-                            [userId, item.PRODUCT_ID, item.QUANTITY, item.QUANTITY * item.PRICE, name, address, paymentMethod], 
-                            (err) => {
-                                if (err) reject('Error inserting order');
-                                else resolve();
-                            });
-                    });
-                });
-
-                // Update product stock
-                let updateStockPromises = cartItems.map((item) => {
-                    return new Promise((resolve, reject) => {
-                        db.run(`UPDATE PRODUCT SET QUANTITY = QUANTITY - ? WHERE ID = ?`,
-                            [item.QUANTITY, item.PRODUCT_ID], (err) => {
-                                if (err) reject('Error updating product stock');
-                                else resolve();
-                            });
-                    });
-                });
-
-                // Clear user cart after order placement
-                const clearCartQuery = `DELETE FROM CART WHERE USER_ID = ?`;
-
-                Promise.all([...insertOrderPromises, ...updateStockPromises])
-                    .then(() => {
-                        db.run(clearCartQuery, [userId], (err) => {
-                            if (err) {
-                                console.error('Error clearing cart:', err);
-                                return res.status(500).send('Order placed, but failed to clear cart');
-                            }
-                            return res.status(200).send(`Order placed successfully!`);
-                        });
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                        return res.status(500).send('Error processing order');
-                    });
-            })
-            .catch((error) => {
-                return res.status(400).send(error);
+            db.run(insertOrderQuery, [userId, item.PRODUCT_ID, item.QUANTITY, item.QUANTITY * item.PRICE, name, address, paymentMethod], (err) => {
+                if (err) {
+                    console.error('Error inserting order:', err);
+                    return res.status(500).send('Error placing order.');
+                }
             });
+
+            const updateStockQuery = `UPDATE PRODUCT SET QUANTITY = QUANTITY - ? WHERE ID = ?`;
+            db.run(updateStockQuery, [item.QUANTITY, item.PRODUCT_ID], (err) => {
+                if (err) {
+                    console.error('Error updating stock:', err);
+                    return res.status(500).send('Error updating stock.');
+                }
+            });
+        }
+        const clearCartQuery = `DELETE FROM CART WHERE USER_ID = ?`;
+        db.run(clearCartQuery, [userId], (err) => {
+            if (err) {
+                console.error('Error clearing cart:', err);
+                return res.status(500).send('Order placed, but failed to clear cart.');
+            }
+            return res.status(200).send('Order placed successfully!');
+        });
     });
 });
+
 
 
 
