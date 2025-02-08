@@ -1,6 +1,11 @@
 import React from 'react';
 
-const LoginForm = ({navigate}) => {
+import { useNavigate } from 'react-router-dom';
+
+
+
+const LoginForm = () => {
+  const navigate = useNavigate();
   let email = '';
   let password = '';
   let message = '';
@@ -9,16 +14,23 @@ const LoginForm = ({navigate}) => {
    const response= await fetch('http://localhost:555/user/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
+      credentials: 'include'
     });
         if (!response.ok) {
           throw new Error('Invalid credentials');
         }
         const userData=await response.json();
-        if(userData.admin===1)
-          navigate("add-product")
-        else
-        navigate("home");
+        console.log(userData);
+        localStorage.setItem('user', JSON.stringify({
+          name: userData.name,
+          admin: userData.isAdmin
+        }));
+        if(userData.admin===1) {
+          navigate('/addproduct')
+        }else {
+          navigate('/home')
+        }
 }
       
       catch(error)  {

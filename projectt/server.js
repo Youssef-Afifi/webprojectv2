@@ -50,7 +50,7 @@ server.post('/user/login', (req, res) => {
             }
             else {
                 let userID = row.ID
-                let isAdmin = row.ROLE
+                let isAdmin = row.ISADMIN
                 const token = generateToken(userID, isAdmin)
 
                 res.cookie('authToken', token, {

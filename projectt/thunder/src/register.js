@@ -1,5 +1,6 @@
 import React from 'react';
 
+
 const RegistrationForm = () => {
   let name = '';
   let email = '';
@@ -7,6 +8,7 @@ const RegistrationForm = () => {
  
   let message = '';
   const registerUser = () => {
+   
     
     fetch('http://localhost:555/user/register', {
       method: 'POST',

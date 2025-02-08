@@ -1,6 +1,6 @@
 const Home=()=>{
     return (
-        <h1>the best laptop store</h1>
+        <h1>the most exclusive laptop store</h1>
     );
 }
 export default Home
