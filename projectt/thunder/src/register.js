@@ -1,22 +1,24 @@
 import React from 'react';
+
 const RegistrationForm = () => {
   let name = '';
   let email = '';
   let password = '';
-  let isAdmin = false;
+ 
   let message = '';
   const registerUser = () => {
-    fetch('http://localhost:1911/user/register', {
+    
+    fetch('http://localhost:555/user/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, isAdmin }),
+      body: JSON.stringify({ name, email, password,}),
     })
       .then((response) => {
         if (!response.ok) {
           throw new Error('Registration failed');
         }
         message = 'Registration successful';
-        alert(message); 
+        alert(message);
       })
       .catch((error) => {
         message = error.message;
@@ -47,15 +49,7 @@ const RegistrationForm = () => {
           onChange={(e) => (password = e.target.value)} 
           required
         />
-        <br />
-        <label>
-          <input
-            type="checkbox"
-            checked={isAdmin}
-            onChange={(e) => (isAdmin = e.target.checked)} 
-          />
-          Admin
-        </label>
+
         <br />
         <button type="button" onClick={registerUser}>
           Register

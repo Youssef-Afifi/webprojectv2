@@ -3,17 +3,24 @@ const express = require('express')
 const cors = require('cors');
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt');
-const db_access = require('./db1.js')
+const db_access = require('./db.js')
 const db = db_access.db
 const cookieParser = require('cookie-parser');
 const server = express()
-const port = 1911
+const port = 555
+const secret_key='qwertyuiop'
 server.use(express.json())
 server.use(cookieParser())
+server.use(cors({
+    origin:"http://localhost:3000",
+    credentials:true
+}))
 
 server.use(express.json())
 server.use(cookieParser())
-const secret_key = "12345678";
+
+
+
 const generateToken = (id, isAdmin) => {
     return jwt.sign({ id, isAdmin }, secret_key, { expiresIn: '1h' })
 }
@@ -33,7 +40,7 @@ const verifyToken = (req, res, next) => {
 server.post('/user/login', (req, res) => {
     const email = req.body.email
     const password = req.body.password
-    db.get(`SELECT * FROM USER WHERE EMAIL=?  `, [email], (err, row) => {
+    db.get(`SELECT * FROM USERS WHERE EMAIL=?  `, [email], (err, row) => {
         bcrypt.compare(password, row.PASSWORD, (err, isMatch) => {
             if (err) {
                 return res.status(500).send('error comparing password.')
@@ -43,13 +50,13 @@ server.post('/user/login', (req, res) => {
             }
             else {
                 let userID = row.ID
-                let isAdmin = row.ISADMIN
+                let isAdmin = row.ROLE
                 const token = generateToken(userID, isAdmin)
 
                 res.cookie('authToken', token, {
                     httpOnly: true,
-                    sameSite: 'none',
-                    secure:true,
+                    sameSite: "lax",
+                    secure:false,
                     expiresIn: '1h'
                 })
                 return res.status(200).json({ id: userID, admin: isAdmin })
@@ -61,20 +68,22 @@ server.post(`/user/register`, (req, res) => {
     const name = req.body.name
     const email = req.body.email
     const password = req.body.password
+    const isadmin = req.body.isAdmin || 0
+
     bcrypt.hash(password, 10, (err, hashedPassword) => {
         if (err) {
             return res.status(500).send('error hashing password')
         }
-        db.run(`INSERT INTO USER (name,email,password,isadmin) VALUES (?,?,?,?)`, [name, email, hashedPassword, 0], (err) => {
+        db.run(`INSERT INTO USERS (name,email,password, isadmin) VALUES (?,?,?,?)`, [name, email, hashedPassword, isadmin], (err) => {
             if (err) {
 
                 return res.status(401).send(err)
             }
             else
                 return res.status(200).send(`registration successfull`)
-        })
-    })
-})
+        });
+    });
+});
 
 server.post(`/products/addproduct`, verifyToken, (req, res) => {
     const isAdmin = req.userDetails.isAdmin;
@@ -84,7 +93,7 @@ server.post(`/products/addproduct`, verifyToken, (req, res) => {
     const description = req.body.description
     const price = req.body.price
     const quantity = parseInt(req.body.quantity, 10)
-    let query = `INSERT INTO FLIGHT (name,description,price,quantity) VALUES
+    let query = `INSERT INTO PRODUCT (name,description,price,quantity) VALUES
     (?,?,?,?)`
     db.run(query, [name, description, price, quantity], (err) => {
         if (err) {
@@ -236,4 +245,15 @@ server.post('/order/place', verifyToken, (req, res) => {
 
 
 
-server.listen(port, () => console.log(`Server running on port ${port}`));
+server.listen(port, () => {
+    console.log('server running on port 555');
+    db.serialize(() => {
+        db.run(db_access.createUserTable);
+        db.run(db_access.createProductTable);
+        db.run(db_access.createCartTable);
+    });
+});
+    
+setInterval (() => {
+    console.log('server is still running');
+}, 10000);

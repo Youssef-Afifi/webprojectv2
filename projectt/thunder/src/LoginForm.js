@@ -6,7 +6,7 @@ const LoginForm = ({navigate}) => {
   let message = '';
   const loginUser = async () => {
     try{
-   const response= await fetch('http://localhost:1911/user/login', {
+   const response= await fetch('http://localhost:555/user/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -16,7 +16,7 @@ const LoginForm = ({navigate}) => {
         }
         const userData=await response.json();
         if(userData.admin===1)
-          navigate("add-flight")
+          navigate("add-product")
         else
         navigate("home");
 }

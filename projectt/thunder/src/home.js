@@ -1,6 +1,6 @@
 const Home=()=>{
     return (
-        <h1>Welcome to our travel agency</h1>
+        <h1>the best laptop store</h1>
     );
 }
 export default Home
