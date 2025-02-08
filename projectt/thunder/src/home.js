@@ -1,6 +1,13 @@
-const Home=()=>{
+import React from "react";
+import "./home.css"; 
+
+const Home = () => {
     return (
-        <h1>the most exclusive laptop store</h1>
+        <div className="home-container">
+            <h1>THUNDER</h1>
+            
+        </div>
     );
-}
-export default Home
+};
+
+export default Home;

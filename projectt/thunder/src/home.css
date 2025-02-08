@@ -1,0 +1,17 @@
+.home-container {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    height: 100vh; 
+    background-image: url('home_wallpaper.jpg');  
+    background-size: cover;  
+    background-position: center;  
+    background-repeat: no-repeat;
+    text-align: center;
+}
+
+h1 {
+    font-size: 80px;  
+    color: white;
+    text-shadow: 4px 4px 10px rgba(255, 255, 0, 0.8); 
+}
