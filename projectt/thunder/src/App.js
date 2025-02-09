@@ -7,6 +7,7 @@ import LoginForm from './LoginForm';
 import Register from "./register.js"; 
 import Navbar from "./navbar"; 
 import AddProducts from "./AddProductForm.js";
+import ProductList from "./productlist.js";
 
 
 
@@ -20,6 +21,7 @@ const App = () => {
          <Route path="/login" element={<LoginForm />} />
          <Route path="/register" element={<Register />} />
          <Route path="/addproduct" element={<AddProducts />} />
+         <Route path="/products" element={<ProductList />} />
       </Routes>
     </Router>
   );

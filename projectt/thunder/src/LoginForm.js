@@ -29,7 +29,7 @@ const LoginForm = () => {
         if(userData.admin===1) {
           navigate('/addproduct')
         }else {
-          navigate('/home')
+          navigate('/products')
         }
 }
       

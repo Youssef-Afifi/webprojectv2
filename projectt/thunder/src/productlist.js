@@ -27,7 +27,7 @@ const ProductList = () => {
   return (
     <div className="form-section">
       <h3>View All products</h3>
-      <button onClick={getAllProducts}>Get products</button>
+      <button onClick={getAllProducts}>view products</button>
       <ul>
         {products.map((product) => (
           <li key={product.ID}>
