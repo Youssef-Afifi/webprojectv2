@@ -13,6 +13,7 @@ const ProductList = () => {
         }
       })
       .then((data) => {
+        console.log("fetched products", data);
         setProducts(data);
       })
       .catch((error) => {
@@ -31,7 +32,7 @@ const ProductList = () => {
       <ul>
         {products.map((product) => (
           <li key={product.ID}>
-            {product.name} - {product.description} (price: {product.price}, (quantity: {product.quantity}))
+            {product.NAME} - {product.DESCRIPTION} (price: {product.PRICE} (quantity: {product.QUANTITY}))
           </li>
         ))}
       </ul>
