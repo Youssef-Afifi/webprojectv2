@@ -15,12 +15,8 @@ server.use(cors({
     origin:"http://localhost:3000",
     credentials:true
 }))
-
 server.use(express.json())
 server.use(cookieParser())
-
-
-
 const generateToken = (id, isAdmin) => {
     return jwt.sign({ id, isAdmin }, secret_key, { expiresIn: '1h' })
 }
@@ -251,9 +247,10 @@ server.listen(port, () => {
         db.run(db_access.createUserTable);
         db.run(db_access.createProductTable);
         db.run(db_access.createCartTable);
+        db.run(db_access.createOrdersTable);
     });
 });
     
 setInterval (() => {
     console.log('server is still running');
-}, 10000);
+}, 8000);

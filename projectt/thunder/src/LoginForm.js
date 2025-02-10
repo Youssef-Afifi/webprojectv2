@@ -23,8 +23,11 @@ const LoginForm = () => {
         const userData=await response.json();
         console.log(userData);
         localStorage.setItem('user', JSON.stringify({
+
+          userID: userData.userID,
+
           name: userData.name,
-          admin: userData.isAdmin
+          admin: userData.isAdmin,
         }));
         if(userData.admin===1) {
           navigate('/addproduct')
